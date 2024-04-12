@@ -1,3 +1,6 @@
+**Adaptions in this fork:** changed `uart.js` to be usable for both Bluetooth and Serial connections, without user selecting the connection type. See [demo of adapted uart.js](https://asterics.github.io/EspruinoWebTools/examples/uart.html).
+
+
 EspruinoWebTools
 ================
 
@@ -14,7 +17,7 @@ Espruino devices straight from the web browser.
 UART.write('LED1.set();\n');
 ```
 
-* [Simple test](https://espruino.github.io/EspruinoWebTools/examples/uart.html)
+* [Simple test](https://asterics.github.io/EspruinoWebTools/examples/uart.html)
 * [Log data to a file](https://espruino.github.io/EspruinoWebTools/examples/logtofile.html)
 
 
