@@ -303,6 +303,9 @@ ChangeLog:
             } else {
               readLoop();
             }
+          }).catch(function(error) {
+              log(0, 'ERROR: ' + error);
+              disconnected();
           });
         }
         readLoop();
