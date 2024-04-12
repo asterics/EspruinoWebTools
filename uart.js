@@ -8,30 +8,27 @@ This Source Code Form is subject to the terms of the Mozilla Public
 License, v. 2.0. If a copy of the MPL was not distributed with this
 file, You can obtain one at http://mozilla.org/MPL/2.0/.
 --------------------------------------------------------------------
-This creates a 'Puck' object that can be used from the Web Browser.
 
-Simple usage:
+Modified version of original at:
+https://github.com/espruino/EspruinoWebTools/blob/master/uart.js
 
-  UART.write("LED1.set()\n")
+This creates a 'UART' object that can be used from the Web Browser,
+which can connect to WebSerial or WebBluetooth:
 
-Execute expression and return the result:
+// @param callback: is called with passing the connection object, after connection established
+// @param connectionOptions: options which are passed to bluetooth.requestDevice(options)
+//                           or to serial.requestPort(options). Can be used to filter devices, which are available.
+//                           default filters for Bluetooth are Espruino devices like Puck.js, Pixl.js and Bangle.js
+UART.connectBluetooth(callback, connectionOptions);
+UART.connectSerial(callback, connectionOptions);
 
-  UART.eval("BTN.read()", function(d) {
-    alert(d);
-  });
+The callback is called with an "connection" object with the following properties:
+on(evtType, handler) ... event handler for various connection events, e.g. on("data", fn);
+write(data, callback) ... function to writing data to device with callback called, after finished
+close() ... closes the connection
 
-Or write and wait for a result - this will return all characters,
-including echo and linefeed from the REPL so you may want to send
-`echo(0)` and use `console.log` when doing this.
-
-  UART.write("1+2\n", function(d) {
-    alert(d);
-  });
-
-Or more advanced usage with control of the connection
-- allows multiple connections
-
-  UART.connect(function(connection) {
+Example usage:
+  UART.<connectFunction>(function(connection) {
     if (!connection) throw "Error!";
     connection.on('data', function(d) { ... });
     connection.on('close', function() { ... });
@@ -113,7 +110,7 @@ ChangeLog:
         return "This Web Browser doesn't support Web Bluetooth.\nPlease see https://www.espruino.com/Puck.js+Quick+Start";
       }
     },
-    connect : function(connection, callback) {
+    connect : function(connection, connectionOptions, callback) {
       var NORDIC_SERVICE = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
       var NORDIC_TX = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
       var NORDIC_RX = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
@@ -185,19 +182,19 @@ ChangeLog:
           });
         }
       };
-
-      navigator.bluetooth.requestDevice({
+      var options = connectionOptions || {
           filters:[
-            { namePrefix: 'Puck.js' },
-            { namePrefix: 'Pixl.js' },
-            { namePrefix: 'MDBT42Q' },
-            { namePrefix: 'Bangle' },
-            { namePrefix: 'RuuviTag' },
-            { namePrefix: 'iTracker' },
-            { namePrefix: 'Thingy' },
-            { namePrefix: 'Espruino' },
-            { services: [ NORDIC_SERVICE ] }
-          ], optionalServices: [ NORDIC_SERVICE ]}).then(function(device) {
+              { namePrefix: 'Puck.js' },
+              { namePrefix: 'Pixl.js' },
+              { namePrefix: 'MDBT42Q' },
+              { namePrefix: 'Bangle' },
+              { namePrefix: 'RuuviTag' },
+              { namePrefix: 'iTracker' },
+              { namePrefix: 'Thingy' },
+              { namePrefix: 'Espruino' },
+              { services: [ NORDIC_SERVICE ] }
+          ], optionalServices: [ NORDIC_SERVICE ]};
+      navigator.bluetooth.requestDevice(options).then(function(device) {
         log(1, 'Device Name:       ' + device.name);
         log(1, 'Device ID:         ' + device.id);
         // Was deprecated: Should use getPrimaryServices for this in future
@@ -276,7 +273,7 @@ ChangeLog:
         return "Serving off HTTP (not HTTPS) - Web Serial not enabled";
       return true;
     },
-    connect : function(connection, callback) {
+    connect : function(connection, connectionOptions, callback) {
       var serialPort;
       function disconnected() {
         connection.isOpening = false;
@@ -286,8 +283,8 @@ ChangeLog:
           connection.emit('close');
         }
       }
-      // TODO: Pass USB vendor and product ID filter when supported by Chrome.
-      navigator.serial.requestPort({}).then(function(port) {
+      var options = connectionOptions || {};
+      navigator.serial.requestPort(options).then(function(port) {
         log(1, "Connecting to serial port");
         serialPort = port;
         return port.open({ baudRate: 115200 });
@@ -329,10 +326,10 @@ ChangeLog:
         var writer = serialPort.writable.getWriter();
         // TODO: progress?
         writer.write(str2ab(data)).then(function() {
-          callback();
+            if(callback) callback();
         }).catch(function(error) {
           log(0,'SEND ERROR: ' + error);
-          closeSerial();
+            connection.close();
         });
         writer.releaseLock();
       };
@@ -345,7 +342,15 @@ ChangeLog:
   endpoints.push(WebSerial);
   // ======================================================================
   var connection;
-  function connect(callback) {
+  var CONN_TYPE_BT = "CONN_TYPE_BT";
+  var CONN_TYPE_SERIAL = "CONN_TYPE_SERIAL";
+  function connectBluetooth(callback, connectionOptions) {
+      return connect(callback, CONN_TYPE_BT, connectionOptions);
+  }
+  function connectSerial(callback, connectionOptions) {
+      return connect(callback, CONN_TYPE_SERIAL, connectionOptions);
+  }
+  function connect(callback, connectionType, connectionOptions) {
     var connection = {
       on : function(evt,cb) { this["on"+evt]=cb; },
       emit : function(evt,data) { if (this["on"+evt]) this["on"+evt](data); },
@@ -354,155 +359,32 @@ ChangeLog:
       txInProgress : false
     };
 
-    // modal
-    var e = document.createElement('div');
-    e.style = 'position:absolute;top:0px;left:0px;right:0px;bottom:0px;opacity:0.5;z-index:100;background:black;';
-    // menu
-    var menu = document.createElement('div');
-    menu.style = 'position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-family: Sans-Serif;z-index:101;';
-    var menutitle = document.createElement('div');
-    menutitle.innerText = "SELECT A PORT...";
-    menutitle.style = 'color:#fff;background:#000;padding:8px 8px 4px 8px;font-weight:bold;';
-    menu.appendChild(menutitle);
-    var items = document.createElement('div');
-    items.style = 'color:#000;background:#fff;padding:4px 8px 4px 8px;';
-    menu.appendChild(items);
-    endpoints.forEach(function(endpoint) {
-      var supported = endpoint.isSupported();
-      if (supported!==true)
-        log(0, endpoint.name+" not supported, "+supported);
-      var ep = document.createElement('div');
-      ep.style = 'width:300px;height:60px;background:#ccc;margin:4px 0px 4px 0px;padding:0px 0px 0px 68px;cursor:pointer;';
-      ep.innerHTML = '<div style="position:absolute;left:8px;width:48px;height:48px;background:#999;padding:6px;cursor:pointer;">'+endpoint.svg+'</div>'+
-                     '<div style="font-size:150%;padding-top:8px;">'+endpoint.name+'</div>'+
-                     '<div style="font-size:80%;color:#666">'+endpoint.description+'</div>';
-      ep.onclick = function(evt) {
-        connection = endpoint.connect(connection, callback);
-        evt.preventDefault();
-        document.body.removeChild(menu);
-        document.body.removeChild(e);
-      };
-      items.appendChild(ep);
-    });
-    document.body.appendChild(e);
-    document.body.appendChild(menu);
+    switch (connectionType) {
+        case CONN_TYPE_BT:
+            if(isSupported(WebBluetooth)) {
+                connection = WebBluetooth.connect(connection, connectionOptions, callback);
+            }
+            break;
+        case CONN_TYPE_SERIAL:
+            if(isSupported(WebSerial)) {
+                connection = WebSerial.connect(connection, connectionOptions, callback);
+            }
+            break;
+    }
     return connection;
   }
-  function checkIfSupported() {
-    var anySupported = false;
-    endpoints.forEach(function(endpoint) {
+  function isSupported(endpoint) {
       var supported = endpoint.isSupported();
-      if (supported===true)
-        anySupported = true;
-      else
-        log(0, endpoint.name+" not supported, "+supported);
-    });
-    return anySupported;
+      if (supported !== true) {
+          log(0, endpoint.name+" not supported, "+supported);
+      }
+      return supported === true;
   }
-  // ======================================================================
-  /* convenience function... Write data, call the callback with data:
-       callbackNewline = false => if no new data received for ~0.2 sec
-       callbackNewline = true => after a newline */
-  function write(data, callback, callbackNewline) {
-    if (!checkIfSupported()) return;
-    if (isBusy) {
-      log(3, "Busy - adding write to queue");
-      queue.push({type:"write", data:data, callback:callback, callbackNewline:callbackNewline});
-      return;
-    }
-
-    var cbTimeout;
-    function onWritten() {
-      if (callbackNewline) {
-        connection.cb = function(d) {
-          var newLineIdx = connection.received.indexOf("\n");
-          if (newLineIdx>=0) {
-            var l = connection.received.substr(0,newLineIdx);
-            connection.received = connection.received.substr(newLineIdx+1);
-            connection.cb = undefined;
-            if (cbTimeout) clearTimeout(cbTimeout);
-            cbTimeout = undefined;
-            if (callback)
-              callback(l);
-            isBusy = false;
-            handleQueue();
-          }
-        };
-      }
-      // wait for any received data if we have a callback...
-      var maxTime = 300; // 30 sec - Max time we wait in total, even if getting data
-      var dataWaitTime = callbackNewline ? 100/*10 sec  if waiting for newline*/ : 3/*300ms*/;
-      var maxDataTime = dataWaitTime; // max time we wait after having received data
-      cbTimeout = setTimeout(function timeout() {
-        cbTimeout = undefined;
-        if (maxTime) maxTime--;
-        if (maxDataTime) maxDataTime--;
-        if (connection.hadData) maxDataTime=dataWaitTime;
-        if (maxDataTime && maxTime) {
-          cbTimeout = setTimeout(timeout, 100);
-        } else {
-          connection.cb = undefined;
-          if (callbackNewline)
-            log(2, "write waiting for newline timed out");
-          if (callback)
-            callback(connection.received);
-          isBusy = false;
-          handleQueue();
-          connection.received = "";
-        }
-        connection.hadData = false;
-      }, 100);
-    }
-
-    if (connection && (connection.isOpen || connection.isOpening)) {
-      if (!connection.txInProgress) connection.received = "";
-      isBusy = true;
-      return connection.write(data, onWritten);
-    }
-
-    connection = connect(function(uart) {
-      if (!uart) {
-        connection = undefined;
-        if (callback) callback(null);
-        return;
-      }
-      connection.received = "";
-      connection.on('data', function(d) {
-        connection.received += d;
-        connection.hadData = true;
-        if (connection.cb)  connection.cb(d);
-      });
-      connection.on('close', function(d) {
-        connection = undefined;
-      });
-      isBusy = true;
-      connection.write(data, onWritten);
-    });
-  }
-
-  function evaluate(expr, cb) {
-    if (!checkIfSupported()) return;
-    if (isBusy) {
-      log(3, "Busy - adding eval to queue");
-      queue.push({type:"eval", expr:expr, cb:cb});
-      return;
-    }
-    write('\x10eval(process.env.CONSOLE).println(JSON.stringify('+expr+'))\n', function(d) {
-      try {
-        var json = JSON.parse(d.trim());
-        cb(json);
-      } catch (e) {
-        log(1, "Unable to decode "+JSON.stringify(d)+", got "+e.toString());
-        cb(null, "Unable to decode "+JSON.stringify(d)+", got "+e.toString());
-      }
-    }, true/*callbackNewline*/);
-  };
 
   // ----------------------------------------------------------
-
   var uart = {
     /// Are we writing debug information? 0 is no, 1 is some, 2 is more, 3 is all.
-    debug : 1,
+    debug : 0,
     /// Should we use flow control? Default is true
     flowControl : true,
     /// Used internally to write log information - you can replace this with your own function
@@ -513,47 +395,8 @@ ChangeLog:
     },
     /** Connect to a new device - this creates a separate
      connection to the one `write` and `eval` use. */
-    connect : connect,
-    /// Write to a device and call back when the data is written.  Creates a connection if it doesn't exist
-    write : write,
-    /// Evaluate an expression and call cb with the result. Creates a connection if it doesn't exist
-    eval : evaluate,
-    /// Write the current time to the device
-    setTime : function(cb) {
-      var d = new Date();
-      var cmd = 'setTime('+(d.getTime()/1000)+');';
-      // in 1v93 we have timezones too
-      cmd += 'if (E.setTimeZone) E.setTimeZone('+d.getTimezoneOffset()/-60+');\n';
-      write(cmd, cb);
-    },
-    /// Did `write` and `eval` manage to create a connection?
-    isConnected : function() {
-      return connection!==undefined;
-    },
-    /// get the connection used by `write` and `eval`
-    getConnection : function() {
-      return connection;
-    },
-    /// Close the connection used by `write` and `eval`
-    close : function() {
-      if (connection)
-        connection.close();
-    },
-    /** Utility function to fade out everything on the webpage and display
-    a window saying 'Click to continue'. When clicked it'll disappear and
-    'callback' will be called. This is useful because you can't initialise
-    Web Bluetooth unless you're doing so in response to a user input.*/
-    modal : function(callback) {
-      var e = document.createElement('div');
-      e.style = 'position:absolute;top:0px;left:0px;right:0px;bottom:0px;opacity:0.5;z-index:100;background:black;';
-      e.innerHTML = '<div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-family: Sans-Serif;font-size:400%;color:white;">Click to Continue...</div>';
-      e.onclick = function(evt) {
-        callback();
-        evt.preventDefault();
-        document.body.removeChild(e);
-      };
-      document.body.appendChild(e);
-    }
+    connectBluetooth : connectBluetooth,
+    connectSerial : connectSerial
   };
   return uart;
 }));

@@ -3,12 +3,55 @@
  </head>
  <body>
   <script src="../uart.js"></script>
-  <script>console.log("Use UART.debug=3 for full debug info")</script>
-  <button onclick="UART.write('LED1.set();\n');">On!</button>
-  <button onclick="UART.write('LED1.reset();\n');">Off!</button><br>
-  <button id="temp" onclick="UART.eval('E.getTemperature()', function(x) { document.getElementById('temp').innerHTML = 'Temperature '+x; })">Read Temperature</button><br>
-  <button onclick="UART.write('var t=getTime()+5;while(getTime()<t);LED1.set();\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\n\'Lots and lots of text Lots and lots of text Lots and lots of text\'\nLED1.reset();\n');">Test flow control</button><br>
 
-  <button onclick="UART.close();">Disconnect</button>
+  <h1>Bluetooth</h1>
+  <button onclick="sendBluetooth('LED1.set();\n');">LED On!</button>
+  <button onclick="sendBluetooth('LED1.reset();\n');">LED Off!</button><br/><br/>
+  <input type="text" id="btText" value="LED1.set();"/><button onclick="sendBluetooth(document.getElementById('btText').value);">Send custom</button><br/><br/>
+  <button onclick="disconnectBluetooth()">Disconnect Bluetooth</button>
+
+  <h1>Serial</h1>
+  <button onclick="sendSerial('LED1.set();\n');">LED On!</button>
+  <button onclick="sendSerial('LED1.reset();\n');">LED Off!</button><br/><br/>
+  <input type="text" id="serialText" value="AT MX 10"/><button onclick="sendSerial(document.getElementById('serialText').value);">Send custom</button><br/><br/>
+  <button onclick="disconnectSerial()">Disconnect Serial</button>
+
+ <script>
+     let btConnection = null;
+     let serialConnection = null;
+     UART.debug = 3;
+
+     async function sendBluetooth(data) {
+         btConnection = btConnection || (await getConnection(UART.connectBluetooth));
+         btConnection.on("data", (data) => console.log("received BT data:", data));
+         btConnection.write(data + '\r\n');
+     }
+
+     async function sendSerial(data) {
+         serialConnection = serialConnection || (await getConnection(UART.connectSerial));
+         serialConnection.on("data", (data) => console.log("received serial data:", data));
+         serialConnection.write(data + '\r\n');
+     }
+
+     async function getConnection(connectFn) {
+         return new Promise(resolve => {
+             connectFn(resolve);
+         });
+     }
+
+     function disconnectBluetooth() {
+         if (btConnection) {
+             btConnection.close();
+             btConnection = null;
+         }
+     }
+
+     function disconnectSerial() {
+         if (serialConnection) {
+             serialConnection.close();
+             serialConnection = null;
+         }
+     }
+ </script>
  </body>
 </html>
