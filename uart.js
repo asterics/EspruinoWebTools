@@ -256,6 +256,7 @@ ChangeLog:
         connection.write();
       }).catch(function(error) {
         log(1, 'ERROR: ' + error);
+        callback(null);
         connection.close();
       });
       return connection;
@@ -316,6 +317,7 @@ ChangeLog:
         callback(connection);
       }).catch(function(error) {
         log(0, 'ERROR: ' + error);
+        callback(null);
         disconnected();
       });
       connection.close = function(callback) {
